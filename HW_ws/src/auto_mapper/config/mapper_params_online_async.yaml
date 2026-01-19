@@ -1,0 +1,93 @@
+slam_toolbox:
+  ros__parameters:
+
+    # ==========================
+    # 🔧 Solver / Plugin 설정
+    # ==========================
+    solver_plugin: solver_plugins::CeresSolver            ## Ceres 기반 최적화 솔버 사용 (기본/안정적)
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY           ## 희소행렬 기반 선형해결자 (2D SLAM 적합)
+    ceres_preconditioner: SCHUR_JACOBI                    ## 전처리기 방식 (기본값 유지)
+    ceres_trust_strategy: LEVENBERG_MARQUARDT             ## 신뢰영역 알고리즘 (수렴 안정성↑)
+    ceres_dogleg_type: TRADITIONAL_DOGLEG                 ## Dogleg 변형 (보통 유지)
+    ceres_loss_function: None                             ## 이상치 가중 비활성 (None = 기본)
+
+    # ==========================
+    # 🧭 ROS 프레임 및 토픽 설정
+    # ==========================
+    odom_frame: odom                                      ## 오도메트리 프레임 이름
+    map_frame: map                                        ## 전역 지도 프레임 이름
+    base_frame: base_link                            ## 로봇 기준 프레임
+    scan_topic: /scan                                     ## 레이저 스캔 토픽명
+    use_map_saver: true                                   ## 맵 저장 서비스 활성화
+    mode: mapping                                         ## localization / mapping 모드 설정
+    publish_tf: true
+    provide_odom_frame: true
+
+    # ==========================
+    # 🚀 시작 위치 설정
+    # ==========================
+    # map_start_pose: [0.0, 0.0, 0.0]                     ## 수동 시작 위치(x, y, yaw)
+    map_start_at_dock: false                              ## dock(0,0)에서 시작하여 기존 맵과 정합
+
+    provide_occupancy_grid: true
+    map_publish_period: 0.2      # 0 이면 퍼블리시 안 함
+    # ==========================
+    # ⚙️ 일반 운영 파라미터
+    # ==========================
+    debug_logging: false                                  ## 디버그 로그 출력 여부
+    throttle_scans: 1                                     ## 스캔 샘플링 간격 (2 = 2개 중 1개만 사용)
+    transform_publish_period: 0.02                        ## TF(map→odom) 발행 주기 [초]
+    map_update_interval: 0.1                              ## 맵 업데이트 주기 [초]
+    resolution: 0.05                                      ## 맵 해상도 [m/cell]
+    max_laser_range: 8.0      
+    minimum_laser_range: 0.12       # ← 또는 이 이름                            ## 최대 스캔 반경 [m]
+    minimum_time_interval: 0.5                            ## 최소 처리 간격 [초]
+    transform_timeout: 0.2                                ## TF timeout [초]
+    tf_buffer_duration: 30.                                ## TF 버퍼 유지 시간 [초]
+    stack_size_to_use: 40000000                           ## 스택 크기 증가 (대형 맵 저장 시 필요)
+    enable_interactive_mode: true   
+    scan_queue_size: 50                      ## RViz 마커를 통한 수동 보정 허용
+
+    # ==========================
+    # 🔍 스캔 정합 / 키프레임 관리
+    # ==========================
+    use_scan_matching: true                               ## 스캔 매칭 활성화
+    use_scan_barycenter: true                             ## 빔 중심 대신 스캔 무게중심 기반 추정
+    minimum_travel_distance: 0.02                          ## 키프레임 생성 최소 이동 거리 [m]
+    minimum_travel_heading: 0.02                           ## 키프레임 생성 최소 회전 [rad]
+    scan_buffer_size: 100                                  ## 로컬 정합용 스캔 버퍼 크기
+    scan_buffer_maximum_scan_distance: 20.0               ## 버퍼 내 최대 스캔 거리 [m]
+    link_match_minimum_response_fine: 0.01                ## 미세 정합 최소 응답 (0~1, 높을수록 보수적)
+    link_scan_maximum_distance: 1.5                       ## 연속 스캔 연결 최대 거리 [m]
+    loop_search_maximum_distance: 8.0                     ## 루프 탐색 최대 거리 [m]
+    do_loop_closing: true                                 ## 루프 클로징 활성화
+    loop_match_minimum_chain_size: 10                     ## 루프 후보 최소 연쇄 길이
+    loop_match_maximum_variance_coarse: 3.0               ## 거친 정합 분산 상한
+    loop_match_minimum_response_coarse: 0.35              ## 루프 coarse 정합 임계값
+    loop_match_minimum_response_fine: 0.45                ## 루프 fine 정합 임계값
+
+    # ==========================
+    # 🔄 상관기반 탐색(로컬 매칭)
+    # ==========================
+    correlation_search_space_dimension: 1.0                ## 탐색 공간 크기 [m]
+    correlation_search_space_resolution: 0.01             ## 탐색 해상도 [m]
+    correlation_search_space_smear_deviation: 0.1         ## 스무딩 표준편차 [m]
+
+    # ==========================
+    # 🔁 상관기반 탐색(루프 클로징)
+    # ==========================
+    loop_search_space_dimension: 8.0                      ## 루프 탐색 영역 크기 [m]
+    loop_search_space_resolution: 0.05                    ## 루프 탐색 해상도 [m]
+    loop_search_space_smear_deviation: 0.03               ## 루프 스무딩 σ [m]
+
+    # ==========================
+    # ⚖️ 스캔 매칭 가중치/범위 설정
+    # ==========================
+    distance_variance_penalty: 0.5                        ## 거리 잔차 가중
+    angle_variance_penalty: 1.0                           ## 회전 잔차 가중
+    fine_search_angle_offset: 0.00349                     ## 미세 탐색 각 오프셋 [rad]
+    coarse_search_angle_offset: 0.349                     ## 거친 탐색 각 범위 [rad]
+    coarse_angle_resolution: 0.0349                       ## 거친 탐색 각 해상도 [rad]
+    minimum_angle_penalty: 0.9                            ## 각도 페널티 최소값
+    minimum_distance_penalty: 0.5                         ## 거리 페널티 최소값
+    use_response_expansion: true                          ## 응답 확장(보간) 사용
